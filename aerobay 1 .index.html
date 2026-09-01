@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AEROBAY - Work Updates Portal</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+    }
+    #root { max-width: 620px; margin: 0 auto; padding: 24px 16px 80px; }
+    
+    /* AEROBAY Header */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #1e293b;
+    }
+    .brand-logo {
+      font-size: 26px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      background: linear-gradient(135deg, #38bdf8, #0284c7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+    }
+    .brand-subtitle {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Cards */
+    .panel {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+    .tab {
+      flex: 1; text-align: center; padding: 9px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; border: 1px solid #334155; background: #0f172a;
+      cursor: pointer; color: #94a3b8; transition: all 0.2s;
+    }
+    .tab.active { background: #0284c7; color: white; border-color: #0284c7; }
+
+    /* Forms */
+    .field-label { font-size: 11.5px; color: #94a3b8; margin: 10px 0 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+    input, select, textarea {
+      width: 100%; border: 1px solid #334155; border-radius: 8px; padding: 10px 12px;
+      font-size: 14px; outline: none; font-family: inherit; background: #0f172a; color: #f8fafc;
+    }
+    input:focus, select:focus, textarea:focus { border-color: #38bdf8; }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%; background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: white; border: none; border-radius: 8px;
+      padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 14px;
+      transition: opacity 0.2s;
+    }
+    .btn-primary:disabled { background: #475569; cursor: not-allowed; opacity: 0.7; }
+
+    .btn-admin {
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      color: white; border: none; border-radius: 8px;
+      padding: 11px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%;
+    }
+
+    /* Session Bar */
+    .session-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      background: #1e293b; border-radius: 12px; padding: 12px 16px;
+      margin-bottom: 20px; border: 1px solid #334155;
+    }
+    .session-info { font-size: 13px; color: #cbd5e1; }
+    .session-info b { color: #38bdf8; }
+    .admin-tag {
+      background: #4f46e5; color: white; font-size: 10px; font-weight: 700;
+      padding: 2px 6px; border-radius: 4px; margin-left: 6px; text-transform: uppercase;
+    }
+    .logout-btn {
+      background: transparent; border: 1px solid #475569; border-radius: 7px;
+      padding: 6px 12px; font-size: 12px; cursor: pointer; color: #94a3b8;
+    }
+    .logout-btn:hover { color: #f8fafc; border-color: #94a3b8; }
+
+    /* Feed Entries */
+    .entry {
+      background: #1e293b; border: 1px solid #334155; border-radius: 12px;
+      padding: 16px; margin-bottom: 12px;
+    }
+    .entry-meta {
+      display: flex; justify-content: space-between; align-items: baseline;
+      margin-bottom: 8px;
+    }
+    .entry-author { font-size: 14px; font-weight: 700; color: #38bdf8; }
+    .entry-team {
+      font-size: 11px; font-weight: 700; color: #94a3b8; background: #0f172a;
+      border-radius: 5px; padding: 2px 8px; margin-left: 8px; border: 1px solid #334155;
+    }
+    .entry-date-badge {
+      font-size: 11px; color: #f59e0b; font-weight: 600;
+    }
+    .entry-text { font-size: 14.5px; line-height: 1.6; color: #e2e8f0; white-space: pre-wrap; }
+    .entry-actions { display: flex; gap: 12px; margin-top: 10px; }
+    .entry-actions button {
+      background: none; border: none; color: #64748b; font-size: 12px;
+      cursor: pointer; padding: 0; font-weight: 600;
+    }
+    .entry-actions button:hover { color: #e2e8f0; }
+
+    .admin-box {
+      border: 1px solid #4f46e5;
+      background: rgba(79, 70, 229, 0.05);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <!-- CDN Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <script type="text/babel">
+    // Browser Storage Shim
+    if (!window.storage) {
+      window.storage = {
+        get: async (k) => {
+          const v = localStorage.getItem(k);
+          return v ? { value: v } : null;
+        },
+        set: async (k, v) => {
+          localStorage.setItem(k, v);
+          return true;
+        }
+      };
+    }
+
+    const { useState, useEffect, useCallback } = React;
+    const ADMIN_KEY_SECRET = "f6@9pXM1"; // Change this admin secret passcode if needed
+
+    async function sha256Hex(str) {
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest('SHA-256', enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
+    function App() {
+      const [entries, setEntries] = useState([]);
+      const [users, setUsers] = useState({});
+      const [session, setSession] = useState(null); // { id, name, team, isAdmin }
+      const [loading, setLoading] = useState(true);
+
+      // Auth state
+      const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup' | 'admin'
+      const [loginId, setLoginId] = useState('');
+      const [loginPw, setLoginPw] = useState('');
+      const [suId, setSuId] = useState('');
+      const [suPw, setSuPw] = useState('');
+      const [suName, setSuName] = useState('');
+      const [suTeam, setSuTeam] = useState('AV2 Assembly');
+      const [adminPassKey, setAdminPassKey] = useState('');
+      const [authError, setAuthError] = useState(null);
+
+      // Post composer state
+      const todayISO = new Date().toISOString().slice(0, 10);
+      const [selectedDate, setSelectedDate] = useState(todayISO);
+      const [postText, setPostText] = useState('');
+
+      // Team Excel Download State
+      const [teamFilter, setTeamFilter] = useState('AV2 Assembly');
+      const [downloadMonth, setDownloadMonth] = useState(todayISO.slice(0, 7));
+
+      const standardTeams = [
+        " production mechanical",
+        " production electronics",
+        " packing",
+        " Aero modelling",
+        " QA & QC",
+        "Other"
+      ];
+
+      const load = useCallback(async () => {
+        setLoading(true);
+        try {
+          const [eRes, uRes] = await Promise.all([
+            window.storage.get('entries').catch(() => null),
+            window.storage.get('users').catch(() => null),
+          ]);
+          const eList = eRes && eRes.value ? JSON.parse(eRes.value) : [];
+          eList.sort((a, b) => (b.customDate || b.ts) - (a.customDate || a.ts));
+          setEntries(eList);
+          const uMap = uRes && uRes.value ? JSON.parse(uRes.value) : {};
+          setUsers(uMap);
+        } catch (e) {
+          setEntries([]);
+          setUsers({});
+        } finally {
+          setLoading(false);
+        }
+      }, []);
+
+      useEffect(() => { load(); }, [load]);
+
+      const saveUsers = async (updated) => {
+        await window.storage.set('users', JSON.stringify(updated));
+        setUsers(updated);
+      };
+
+      const saveEntries = async (updated) => {
+        await window.storage.set('entries', JSON.stringify(updated));
+        setEntries([...updated].sort((a, b) => new Date(b.workDate) - new Date(a.workDate)));
+      };
+
+      const handleSignup = async () => {
+        setAuthError(null);
+        const id = suId.trim().toLowerCase();
+        if (!id || !suPw || !suName.trim()) {
+          setAuthError('Please fill out all fields.');
+          return;
+        }
+        try {
+          const fresh = await window.storage.get('users').catch(() => null);
+          const current = fresh && fresh.value ? JSON.parse(fresh.value) : {};
+          if (current[id]) {
+            setAuthError('ID already taken.');
+            return;
+          }
+          const hash = await sha256Hex(suPw);
+          const newUser = { passwordHash: hash, name: suName.trim(), team: suTeam, isAdmin: false };
+          const updated = { ...current, [id]: newUser };
+          await saveUsers(updated);
+          setSession({ id, ...newUser });
+        } catch (e) {
+          setAuthError('Sign up failed. Please retry.');
+        }
+      };
+
+      const handleLogin = async () => {
+        setAuthError(null);
+        const id = loginId.trim().toLowerCase();
+        try {
+          const fresh = await window.storage.get('users').catch(() => null);
+          const current = fresh && fresh.value ? JSON.parse(fresh.value) : {};
+          const acc = current[id];
+          if (!acc) {
+            setAuthError('Account not found.');
+            return;
+          }
+          const hash = await sha256Hex(loginPw);
+          if (hash !== acc.passwordHash) {
+            setAuthError('Incorrect password.');
+            return;
+          }
+          setSession({ id, ...acc });
+        } catch (e) {
+          setAuthError('Login failed.');
+        }
+      };
+
+      const handleAdminLogin = () => {
+        setAuthError(null);
+        if (adminPassKey === ADMIN_KEY_SECRET) {
+          setSession({ id: 'admin', name: 'AEROBAY Admin', team: 'Management', isAdmin: true });
+        } else {
+          setAuthError('Invalid Admin Key.');
+        }
+      };
+
+      const handlePost = async () => {
+        if (!postText.trim() || !session) return;
+        const newEntry = {
+          id: 'aerobay_' + Date.now(),
+          text: postText.trim(),
+          author: session.name,
+          team: session.team,
+          ownerId: session.id,
+          workDate: selectedDate,
+          ts: Date.now()
+        };
+        const updated = [newEntry, ...entries];
+        await saveEntries(updated);
+        setPostText('');
+      };
+
+      const handleDelete = async (id) => {
+        const updated = entries.filter(e => e.id !== id);
+        await saveEntries(updated);
+      };
+
+      // Team-Wise Excel Export Process
+      const downloadTeamExcel = () => {
+        const filtered = entries.filter(e => {
+          const matchTeam = teamFilter === 'ALL' || e.team === teamFilter;
+          const matchMonth = e.workDate.startsWith(downloadMonth);
+          return matchTeam && matchMonth;
+        });
+
+        if (filtered.length === 0) {
+          alert('No updates found for this team and month combination.');
+          return;
+        }
+
+        const dataRows = filtered.map(e => ({
+          "Work Date": e.workDate,
+          "Team/Department": e.team,
+          "Member Name": e.author,
+          "Work Update / Task Details": e.text
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(dataRows);
+        ws['!cols'] = [{ wch: 14 }, { wch: 22 }, { wch: 20 }, { wch: 65 }];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Team Updates");
+        
+        const cleanTeamName = teamFilter.replace(/\s+/g, '_');
+        XLSX.writeFile(wb, `AEROBAY_${cleanTeamName}_${downloadMonth}.xlsx`);
+      };
+
+      return (
+        <div>
+          {/* AEROBAY Header */}
+          <div className="brand-header">
+            <div className="brand-logo">AEROBAY</div>
+            <div className="brand-subtitle"> Date Wise Work Update </div>
+          </div>
+
+          {!session ? (
+            /* Auth Panel */
+            <div className="panel">
+              <div className="tabs">
+                <div className={"tab" + (authMode === 'login' ? ' active' : '')} onClick={() => setAuthMode('login')}>User Login</div>
+                <div className={"tab" + (authMode === 'signup' ? ' active' : '')} onClick={() => setAuthMode('signup')}>Register</div>
+                <div className={"tab" + (authMode === 'admin' ? ' active' : '')} onClick={() => setAuthMode('admin')}>Admin Portal</div>
+              </div>
+
+              {authMode === 'login' && (
+                <div>
+                  <div className="field-label">User ID</div>
+                  <input value={loginId} onChange={e => setLoginId(e.target.value)} placeholder="e.g. rohit" />
+                  <div className="field-label">Password</div>
+                  <input type="password" value={loginPw} onChange={e => setLoginPw(e.target.value)} placeholder="••••••••" />
+                  <button className="btn-primary" onClick={handleLogin}>Log In to Portal</button>
+                </div>
+              )}
+
+              {authMode === 'signup' && (
+                <div>
+                  <div className="field-label">Choose ID</div>
+                  <input value={suId} onChange={e => setSuId(e.target.value)} placeholder="e.g. rohit" />
+                  <div className="field-label">Password</div>
+                  <input type="password" value={suPw} onChange={e => setSuPw(e.target.value)} placeholder="••••••••" />
+                  <div className="field-label">Full Name</div>
+                  <input value={suName} onChange={e => setSuName(e.target.value)} placeholder="e.g. Rohit Kumar" />
+                  <div className="field-label">Team / Department</div>
+                  <select value={suTeam} onChange={e => setSuTeam(e.target.value)}>
+                    {standardTeams.map(t => <option key={t} value={t}>{t}</option>)}
+                  </select>
+                  <button className="btn-primary" onClick={handleSignup}>Create AEROBAY Account</button>
+                </div>
+              )}
+
+              {authMode === 'admin' && (
+                <div>
+                  <div className="field-label">Secret Key</div>
+                  <input type="password" value={adminPassKey} onChange={e => setAdminPassKey(e.target.value)} placeholder=" wingardium leviosa " />
+                  <p style={{fontSize: 11, color: '#64748b', marginTop: 6}}>key: <code>aerobayadmin</code></p>
+                  <button className="btn-primary btn-admin" style={{marginTop: 14}} onClick={handleAdminLogin}>Access Admin Panel</button>
+                </div>
+              )}
+
+              {authError && <div style={{color: '#ef4444', fontSize: 13, marginTop: 10}}>{authError}</div>}
+            </div>
+          ) : (
+            <div>
+              {/* Session Status */}
+              <div className="session-bar">
+                <div className="session-info">
+                  Active User: <b>{session.name}</b>
+                  {session.isAdmin && <span className="admin-tag">Admin</span>}
+                  <div style={{fontSize: 11, color: '#64748b'}}>{session.team}</div>
+                </div>
+                <button className="logout-btn" onClick={() => setSession(null)}>Log Out</button>
+              </div>
+
+              {/* Work Update Composer */}
+              <div className="panel">
+                <div className="field-label" style={{marginTop: 0}}>Select Date of Work</div>
+                <input 
+                  type="date" 
+                  value={selectedDate} 
+                  onChange={e => setSelectedDate(e.target.value)} 
+                  style={{marginBottom: 12}}
+                />
+
+                <div className="field-label">Work Update Details</div>
+                <textarea 
+                  rows="3" 
+                  placeholder="Describe your aerospace assembly, testing, or maintenance work..." 
+                  value={postText}
+                  onChange={e => setPostText(e.target.value)}
+                />
+
+                <button className="btn-primary" onClick={handlePost} disabled={!postText.trim()}>
+                  Submit Work Update
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Team-Wise Export Section (Available to All / Admins) */}
+          <div className="panel admin-box">
+            <div style={{fontSize: 14, fontWeight: 700, color: '#38bdf8', marginBottom: 12}}>
+              Team-Wise Excel Data Collection
+            </div>
+            
+            <div className="field-label" style={{marginTop: 0}}>Select Team / Department</div>
+            <select value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{marginBottom: 10}}>
+              <option value="ALL">All Teams (Consolidated)</option>
+              {standardTeams.map(t => <option key={t} value={t}>{t}</option>)}
+            </select>
+
+            <div className="field-label">Select Month</div>
+            <input 
+              type="month" 
+              value={downloadMonth} 
+              onChange={e => setDownloadMonth(e.target.value)} 
+              style={{marginBottom: 14}} 
+            />
+
+            <button className="btn-primary" onClick={downloadTeamExcel}>
+              Download {teamFilter} Excel Report
+            </button>
+          </div>
+
+          {/* Feed List */}
+          <div style={{fontSize: 13, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', marginBottom: 12}}>
+            Recent Submissions
+          </div>
+
+          {loading ? (
+            <div style={{textAlign: 'center', color: '#64748b', padding: 20}}>Loading AEROBAY updates...</div>
+          ) : entries.length === 0 ? (
+            <div style={{textAlign: 'center', color: '#64748b', padding: 20}}>No work logs submitted yet.</div>
+          ) : (
+            entries.map(e => (
+              <div className="entry" key={e.id}>
+                <div className="entry-meta">
+                  <div>
+                    <span className="entry-author">{e.author}</span>
+                    <span className="entry-team">{e.team}</span>
+                  </div>
+                  <span className="entry-date-badge">📅 {e.workDate}</span>
+                </div>
+                <div className="entry-text">{e.text}</div>
+
+                {(session && (session.isAdmin || session.id === e.ownerId)) && (
+                  <div className="entry-actions">
+                    <button onClick={() => handleDelete(e.id)} style={{color: '#ef4444'}}>Delete Log</button>
+                  </div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
